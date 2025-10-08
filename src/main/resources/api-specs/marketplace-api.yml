@@ -1,0 +1,286 @@
+openapi: 3.0.3
+info:
+  title: Cosmo Cats Intergalactic Marketplace API
+  version: 1.0.0
+  description: |
+    REST API for managing intergalactic products in the **Cosmo Cats Marketplace**.  
+    Includes CRUD operations, validation rules, and standardized error responses (RFC 9457).
+  license:
+    name: MIT License
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+
+tags:
+  - name: Products
+    description: Endpoints for managing intergalactic goods
+  - name: Categories
+    description: Endpoints for grouping products by category
+  - name: Orders
+    description: Endpoints for creating and tracking customer orders
+  - name: Carts
+    description: Endpoints for managing user shopping carts
+
+paths:
+  /api/v1/products:
+    get:
+      summary: Get a list of all products
+      operationId: listProducts
+      tags: [Products]
+      parameters:
+        - name: categoryId
+          in: query
+          required: false
+          description: Filter products by category ID
+          schema:
+            type: string
+            format: uuid
+        - name: minPrice
+          in: query
+          required: false
+          description: Minimum price for filtering
+          schema:
+            type: number
+            format: double
+        - name: maxPrice
+          in: query
+          required: false
+          description: Maximum price for filtering
+          schema:
+            type: number
+            format: double
+        - name: name
+          in: query
+          required: false
+          description: Filter products by partial name match
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response with all available products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductDTO'
+        '500':
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+    post:
+      summary: Create a new product
+      operationId: createProduct
+      tags: [Products]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductCreateDTO'
+      responses:
+        '201':
+          description: Product successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductDTO'
+        '400':
+          description: Validation error (RFC9457)
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '409':
+          description: Conflict — a product with the same name already exists
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '500':
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+
+  /api/v1/products/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Unique product identifier
+        schema:
+          type: string
+          format: uuid
+
+    get:
+      summary: Get a product by its ID
+      operationId: getProduct
+      tags: [Products]
+      responses:
+        '200':
+          description: Product found and returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductDTO'
+        '404':
+          description: Product not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '500':
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+    put:
+      summary: Update an existing product by ID
+      operationId: updateProduct
+      tags: [Products]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductUpdateDTO'
+      responses:
+        '200':
+          description: Product successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductDTO'
+        '400':
+          description: Validation error (RFC9457)
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '404':
+          description: Product not found (RFC9457)
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '409':
+          description: Conflict — cannot update product due to duplicate or invalid data
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '500':
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+    delete:
+      summary: Delete a product by ID
+      operationId: deleteProduct
+      tags: [Products]
+      responses:
+        '204':
+          description: Product successfully deleted — no content is returned
+        '500':
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+components:
+  schemas:
+    ProductDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "8a2bdb6f-21f3-4c8f-9f85-8e64e6b39e9d"
+        name:
+          type: string
+          minLength: 3
+          maxLength: 255
+          example: "galaxy yarn"
+        price:
+          type: number
+          format: double
+          minimum: 0.01
+          example: 12.5
+        description:
+          type: string
+          maxLength: 1024
+          example: "Anti-gravity yarn for zero-G environments"
+        categoryId:
+          type: string
+          format: uuid
+          nullable: true
+      required: [id, name, price]
+
+    ProductCreateDTO:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 3
+          maxLength: 255
+          description: Must contain a cosmic word (star, galaxy, comet, nebula, cosmo, orbit)
+          example: "cosmo milk"
+        price:
+          type: number
+          format: double
+          minimum: 0.01
+          example: 7.99
+        description:
+          type: string
+          maxLength: 1024
+          example: "Fresh cosmic milk from comet fields"
+        categoryId:
+          type: string
+          format: uuid
+          nullable: true
+      required: [name, price]
+
+    ProductUpdateDTO:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 3
+          maxLength: 255
+          example: "stellar yarn"
+        price:
+          type: number
+          format: double
+          minimum: 0.01
+          example: 15.0
+        description:
+          type: string
+          maxLength: 1024
+          example: "Improved edition of anti-gravity yarn"
+        categoryId:
+          type: string
+          format: uuid
+          nullable: true
+
+    ProblemDetails:
+      type: object
+      description: Standardized error response according to RFC 9457 (Problem Details for HTTP APIs)
+      properties:
+        type: { type: string, format: uri, nullable: true, example: "about:blank" }
+        title: { type: string, example: "Validation failed" }
+        status: { type: integer, example: 400 }
+        detail: { type: string, example: "Field 'price' must be greater than 0" }
+        instance: { type: string, format: uri, nullable: true, example: "/api/v1/products" }
