@@ -1,4 +1,4 @@
-package ua.kpi.ivanka.marketplace.exception;
+package ua.kpi.ivanka.marketplace.web.exception;
 
 import lombok.Builder;
 import lombok.Data;

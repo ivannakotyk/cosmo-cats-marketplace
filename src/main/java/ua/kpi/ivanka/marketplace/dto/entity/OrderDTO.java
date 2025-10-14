@@ -1,4 +1,4 @@
-package ua.kpi.ivanka.marketplace.domain.model;
+package ua.kpi.ivanka.marketplace.dto.entity;
 
 import lombok.*;
 import java.math.BigDecimal;
@@ -10,8 +10,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Order {
-
+public class OrderDTO {
     private UUID id;
     private UUID productId;
     private int quantity;

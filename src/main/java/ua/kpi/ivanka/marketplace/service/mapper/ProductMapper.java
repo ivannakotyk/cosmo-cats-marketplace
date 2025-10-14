@@ -1,4 +1,4 @@
-package ua.kpi.ivanka.marketplace.mapper;
+package ua.kpi.ivanka.marketplace.service.mapper;
 
 import ua.kpi.ivanka.marketplace.domain.model.Product;
 import ua.kpi.ivanka.marketplace.dto.entity.ProductDTO;

@@ -1,14 +1,15 @@
-package ua.kpi.ivanka.marketplace.controller;
+package ua.kpi.ivanka.marketplace.web.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ua.kpi.ivanka.marketplace.dto.entity.ProductDTO;
 import ua.kpi.ivanka.marketplace.dto.request.ProductCreateDTO;
 import ua.kpi.ivanka.marketplace.dto.request.ProductUpdateDTO;
-import ua.kpi.ivanka.marketplace.service.ProductService;
 import ua.kpi.ivanka.marketplace.client.RatesClient;
+import ua.kpi.ivanka.marketplace.service.ProductService;
 
 import java.util.List;
 import java.util.Map;
@@ -47,9 +48,9 @@ public class ProductController {
     }
 
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable UUID id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         service.delete(id);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/rates")
