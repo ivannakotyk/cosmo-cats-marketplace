@@ -1,0 +1,354 @@
+openapi: 3.0.3
+info:
+  description: "REST API for managing intergalactic products in the **Cosmo Cats Marketplace**.\
+    \  \nIncludes CRUD operations, validation rules, and standardized error responses\
+    \ (RFC 9457).\n"
+  license:
+    name: MIT License
+    url: https://opensource.org/licenses/MIT
+  title: Cosmo Cats Intergalactic Marketplace API
+  version: 1.0.0
+servers:
+- description: Local development server
+  url: http://localhost:8080
+tags:
+- description: Endpoints for managing intergalactic goods
+  name: Products
+- description: Endpoints for grouping products by category
+  name: Categories
+- description: Endpoints for creating and tracking customer orders
+  name: Orders
+- description: Endpoints for managing user shopping carts
+  name: Carts
+paths:
+  /api/v1/products:
+    get:
+      operationId: listProducts
+      parameters:
+      - description: Filter products by category ID
+        explode: true
+        in: query
+        name: categoryId
+        required: false
+        schema:
+          format: uuid
+          type: string
+        style: form
+      - description: Minimum price for filtering
+        explode: true
+        in: query
+        name: minPrice
+        required: false
+        schema:
+          format: double
+          type: number
+        style: form
+      - description: Maximum price for filtering
+        explode: true
+        in: query
+        name: maxPrice
+        required: false
+        schema:
+          format: double
+          type: number
+        style: form
+      - description: Filter products by partial name match
+        explode: true
+        in: query
+        name: name
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/ProductDTO'
+                type: array
+          description: Successful response with all available products
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+          description: Internal server error
+      summary: Get a list of all products
+      tags:
+      - Products
+      x-accepts: application/json
+    post:
+      operationId: createProduct
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductCreateDTO'
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductDTO'
+          description: Product successfully created
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+          description: Validation error (RFC9457)
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+          description: Conflict — a product with the same name already exists
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+          description: Internal server error
+      summary: Create a new product
+      tags:
+      - Products
+      x-content-type: application/json
+      x-accepts: application/json
+  /api/v1/products/{id}:
+    delete:
+      operationId: deleteProduct
+      parameters:
+      - description: Unique product identifier
+        explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      responses:
+        "204":
+          description: Product successfully deleted — no content is returned
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+          description: Internal server error
+      summary: Delete a product by ID
+      tags:
+      - Products
+      x-accepts: application/problem+json
+    get:
+      operationId: getProduct
+      parameters:
+      - description: Unique product identifier
+        explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductDTO'
+          description: Product found and returned
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+          description: Product not found
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+          description: Internal server error
+      summary: Get a product by its ID
+      tags:
+      - Products
+      x-accepts: application/json
+    put:
+      operationId: updateProduct
+      parameters:
+      - description: Unique product identifier
+        explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductUpdateDTO'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductDTO'
+          description: Product successfully updated
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+          description: Validation error (RFC9457)
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+          description: Product not found (RFC9457)
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+          description: Conflict — cannot update product due to duplicate or invalid
+            data
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+          description: Internal server error
+      summary: Update an existing product by ID
+      tags:
+      - Products
+      x-content-type: application/json
+      x-accepts: application/json
+components:
+  schemas:
+    ProductDTO:
+      example:
+        price: 12.5
+        name: galaxy yarn
+        description: Anti-gravity yarn for zero-G environments
+        id: 8a2bdb6f-21f3-4c8f-9f85-8e64e6b39e9d
+        categoryId: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+      properties:
+        id:
+          example: 8a2bdb6f-21f3-4c8f-9f85-8e64e6b39e9d
+          format: uuid
+          type: string
+        name:
+          example: galaxy yarn
+          maxLength: 255
+          minLength: 3
+          type: string
+        price:
+          example: 12.5
+          format: double
+          minimum: 0.01
+          type: number
+        description:
+          example: Anti-gravity yarn for zero-G environments
+          maxLength: 1024
+          type: string
+        categoryId:
+          format: uuid
+          nullable: true
+          type: string
+      required:
+      - id
+      - name
+      - price
+      type: object
+    ProductCreateDTO:
+      example:
+        price: 7.99
+        name: cosmo milk
+        description: Fresh cosmic milk from comet fields
+        categoryId: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+      properties:
+        name:
+          description: "Must contain a cosmic word (star, galaxy, comet, nebula, cosmo,\
+            \ orbit)"
+          example: cosmo milk
+          maxLength: 255
+          minLength: 3
+          type: string
+        price:
+          example: 7.99
+          format: double
+          minimum: 0.01
+          type: number
+        description:
+          example: Fresh cosmic milk from comet fields
+          maxLength: 1024
+          type: string
+        categoryId:
+          format: uuid
+          nullable: true
+          type: string
+      required:
+      - name
+      - price
+      type: object
+    ProductUpdateDTO:
+      example:
+        price: 15.0
+        name: stellar yarn
+        description: Improved edition of anti-gravity yarn
+        categoryId: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+      properties:
+        name:
+          example: stellar yarn
+          maxLength: 255
+          minLength: 3
+          type: string
+        price:
+          example: 15.0
+          format: double
+          minimum: 0.01
+          type: number
+        description:
+          example: Improved edition of anti-gravity yarn
+          maxLength: 1024
+          type: string
+        categoryId:
+          format: uuid
+          nullable: true
+          type: string
+      type: object
+    ProblemDetails:
+      description: Standardized error response according to RFC 9457 (Problem Details
+        for HTTP APIs)
+      properties:
+        type:
+          example: about:blank
+          format: uri
+          nullable: true
+          type: string
+        title:
+          example: Validation failed
+          type: string
+        status:
+          example: 400
+          type: integer
+        detail:
+          example: Field 'price' must be greater than 0
+          type: string
+        instance:
+          example: /api/v1/products
+          format: uri
+          nullable: true
+          type: string
+      type: object
+
