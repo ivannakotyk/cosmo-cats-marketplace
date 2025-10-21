@@ -11,4 +11,5 @@ import java.util.UUID;
 public class CartDTO {
     private UUID id;
     private List<UUID> productIds;
+    private double totalPrice;
 }
