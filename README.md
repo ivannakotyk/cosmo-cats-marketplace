@@ -27,3 +27,10 @@
 ✅ Integration with WireMock (Docker-based mock service)  
 ✅ Logging with SLF4J (`@Slf4j`)  
 ✅ Domain-Driven Design (DDD) architecture successfully applied
+
+
+### Example: 3rd-Party Rates API
+**Endpoint:** `/api/v1/products/rates`  
+Response:
+```json
+{ "USD": 42.0, "EUR": 45.5 }
