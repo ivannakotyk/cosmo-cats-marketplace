@@ -1,14 +1,13 @@
 package ua.kpi.ivanka.marketplace.dto;
 
-import lombok.Builder;
-import lombok.Value;
-import lombok.extern.jackson.Jacksonized;
+import lombok.*;
 import java.util.List;
 import java.util.UUID;
 
-@Value
+@Data
 @Builder
-@Jacksonized
+@NoArgsConstructor
+@AllArgsConstructor
 public class CartDTO {
     UUID id;
     List<UUID> productIds;
