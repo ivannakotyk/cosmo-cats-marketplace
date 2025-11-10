@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ua.kpi.ivanka.marketplace.domain.model.Cart;
-import ua.kpi.ivanka.marketplace.dto.entity.CartDTO;
+import ua.kpi.ivanka.marketplace.dto.CartDTO;
 import ua.kpi.ivanka.marketplace.dto.request.CartCreateDTO;
 import ua.kpi.ivanka.marketplace.dto.request.CartUpdateDTO;
 import ua.kpi.ivanka.marketplace.service.mapper.CartMapper;
@@ -43,47 +43,48 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    public CartDTO create(CartCreateDTO dto) {
-        Cart entity = mapper.toEntity(dto);
+    public CartDTO createCart(CartCreateDTO dto) {
+        Cart entity = mapper.toCart(dto);
         entity.setId(IdGenerator.generate());
         carts.put(entity.getId(), entity);
         log.info("Created cart {}", entity.getId());
-        return mapper.toDto(entity);
+        return mapper.toCartDTO(entity);
     }
 
     @Override
-    public List<CartDTO> list() {
+    public List<CartDTO> listCarts() {
         log.debug("Listing all carts (count={})", carts.size());
         return carts.values().stream()
-                .map(mapper::toDto)
+                .map(mapper::toCartDTO)
                 .toList();
     }
 
     @Override
-    public CartDTO get(UUID id) {
+    public CartDTO getCart(UUID id) {
         Cart cart = carts.get(id);
         if (cart == null) {
             log.warn("Cart with ID {} not found", id);
             throw new CartNotFoundException(id);
         }
         log.debug("Retrieved cart: {} (ID={})", cart, id);
-        return mapper.toDto(cart);
+        return mapper.toCartDTO(cart);
     }
 
     @Override
-    public CartDTO update(UUID id, CartUpdateDTO dto) {
+    public CartDTO updateCart(UUID id, CartUpdateDTO dto) {
         Cart cart = carts.get(id);
         if (cart == null) {
             log.warn("Cannot update — cart with ID {} not found", id);
             throw new CartNotFoundException(id);
         }
-        mapper.updateEntity(cart, dto);
+
+        mapper.updateCart(cart, dto);
         log.info("Updated cart {}", id);
-        return mapper.toDto(cart);
+        return mapper.toCartDTO(cart);
     }
 
     @Override
-    public void delete(UUID id) {
+    public void deleteCart(UUID id) {
         if (carts.remove(id) != null) {
             log.info("Deleted cart {}", id);
         } else {

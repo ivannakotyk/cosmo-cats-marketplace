@@ -3,8 +3,9 @@ package ua.kpi.ivanka.marketplace.web.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ua.kpi.ivanka.marketplace.dto.entity.CategoryDTO;
+import ua.kpi.ivanka.marketplace.dto.CategoryDTO;
 import ua.kpi.ivanka.marketplace.dto.request.CategoryCreateDTO;
 import ua.kpi.ivanka.marketplace.dto.request.CategoryUpdateDTO;
 import ua.kpi.ivanka.marketplace.service.CategoryService;
@@ -20,32 +21,33 @@ public class CategoryController {
     private final CategoryService service;
 
     @GetMapping
-    @ResponseStatus(HttpStatus.OK)
-    public List<CategoryDTO> list() {
-        return service.list();
+    public ResponseEntity<List<CategoryDTO>> listCategories() {
+        List<CategoryDTO> categories = service.listCategories();
+        return ResponseEntity.ok(categories);
     }
 
     @GetMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
-    public CategoryDTO get(@PathVariable UUID id) {
-        return service.get(id);
+    public ResponseEntity<CategoryDTO> getCategory(@PathVariable UUID id) {
+        CategoryDTO category = service.getCategory(id);
+        return ResponseEntity.ok(category);
     }
 
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public CategoryDTO create(@Valid @RequestBody CategoryCreateDTO dto) {
-        return service.create(dto);
+    public ResponseEntity<CategoryDTO> createCategory(@Valid @RequestBody CategoryCreateDTO dto) {
+        CategoryDTO createdCategory = service.createCategory(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdCategory);
     }
 
     @PutMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
-    public CategoryDTO update(@PathVariable UUID id, @Valid @RequestBody CategoryUpdateDTO dto) {
-        return service.update(id, dto);
+    public ResponseEntity<CategoryDTO> updateCategory(@PathVariable UUID id,
+                                                      @Valid @RequestBody CategoryUpdateDTO dto) {
+        CategoryDTO updatedCategory = service.updateCategory(id, dto);
+        return ResponseEntity.ok(updatedCategory);
     }
 
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable UUID id) {
-        service.delete(id);
+    public ResponseEntity<Void> deleteCategory(@PathVariable UUID id) {
+        service.deleteCategory(id);
+        return ResponseEntity.noContent().build();
     }
 }

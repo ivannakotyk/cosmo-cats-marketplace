@@ -8,3 +8,5 @@ public class RatesClientException extends RuntimeException {
         super(message, cause);
     }
 }
+
+

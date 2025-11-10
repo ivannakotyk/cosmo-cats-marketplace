@@ -1,15 +1,15 @@
-package ua.kpi.ivanka.marketplace.domain.model;
+package ua.kpi.ivanka.marketplace.dto;
 
 import lombok.Builder;
-import lombok.Data;
-
-
+import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 import java.util.List;
 import java.util.UUID;
 
-@Data
+@Value
 @Builder
-public class Cart {
+@Jacksonized
+public class CartDTO {
     UUID id;
     List<UUID> productIds;
     double totalPrice;

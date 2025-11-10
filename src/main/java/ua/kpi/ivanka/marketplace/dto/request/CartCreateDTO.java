@@ -1,17 +1,18 @@
 package ua.kpi.ivanka.marketplace.dto.request;
 
 import jakarta.validation.constraints.NotEmpty;
-import lombok.*;
+import lombok.Builder;
+import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
+
 import java.util.List;
 import java.util.UUID;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Value
 @Builder
+@Jacksonized
 public class CartCreateDTO {
 
     @NotEmpty(message = "Cart must contain at least one product")
-    private List<UUID> productIds;
+    List<UUID> productIds;
 }

@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ua.kpi.ivanka.marketplace.domain.model.Product;
-import ua.kpi.ivanka.marketplace.dto.entity.ProductDTO;
+import ua.kpi.ivanka.marketplace.dto.ProductDTO;
 import ua.kpi.ivanka.marketplace.dto.request.ProductCreateDTO;
 import ua.kpi.ivanka.marketplace.dto.request.ProductUpdateDTO;
 import ua.kpi.ivanka.marketplace.service.exception.ProductNotFoundException;
@@ -32,7 +32,6 @@ public class ProductServiceImpl implements ProductService {
                 .description("anti-gravity yarn for zero-g play")
                 .categoryId(null)
                 .build();
-        store.put(p1.getId(), p1);
 
         Product p2 = Product.builder()
                 .id(IdGenerator.generate())
@@ -41,53 +40,57 @@ public class ProductServiceImpl implements ProductService {
                 .description("ultra-fresh cosmic milk")
                 .categoryId(null)
                 .build();
+
+        store.put(p1.getId(), p1);
         store.put(p2.getId(), p2);
 
         log.info("Initialized mock product store with {} items", store.size());
     }
 
     @Override
-    public ProductDTO create(ProductCreateDTO dto) {
-        Product entity = mapper.toEntity(dto);
+    public ProductDTO createProduct(ProductCreateDTO dto) {
+        Product entity = mapper.toProduct(dto);
         entity.setId(IdGenerator.generate());
         store.put(entity.getId(), entity);
+
         log.info("Created new product: {} (ID={})", entity.getName(), entity.getId());
-        return mapper.toDto(entity);
+        return mapper.toProductDTO(entity);
     }
 
     @Override
-    public List<ProductDTO> list() {
+    public List<ProductDTO> listProducts() {
         log.debug("Listing all products (count={})", store.size());
         return store.values().stream()
-                .map(mapper::toDto)
+                .map(mapper::toProductDTO)
                 .toList();
     }
 
     @Override
-    public ProductDTO get(UUID id) {
+    public ProductDTO getProduct(UUID id) {
         Product entity = store.get(id);
         if (entity == null) {
             log.warn("Product with ID {} not found", id);
             throw new ProductNotFoundException(id);
         }
         log.debug("Retrieved product: {} (ID={})", entity.getName(), id);
-        return mapper.toDto(entity);
+        return mapper.toProductDTO(entity);
     }
 
     @Override
-    public ProductDTO update(UUID id, ProductUpdateDTO dto) {
+    public ProductDTO updateProduct(UUID id, ProductUpdateDTO dto) {
         Product entity = store.get(id);
         if (entity == null) {
             log.warn("Cannot update — product with ID {} not found", id);
             throw new ProductNotFoundException(id);
         }
-        mapper.updateEntity(entity, dto);
+
+        mapper.updateProduct(entity, dto);
         log.info("Updated product: {} (ID={})", entity.getName(), id);
-        return mapper.toDto(entity);
+        return mapper.toProductDTO(entity);
     }
 
     @Override
-    public void delete(UUID id) {
+    public void deleteProduct(UUID id) {
         if (store.remove(id) != null) {
             log.info("Deleted product with ID {}", id);
         } else {

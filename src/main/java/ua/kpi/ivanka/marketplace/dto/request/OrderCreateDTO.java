@@ -1,27 +1,28 @@
 package ua.kpi.ivanka.marketplace.dto.request;
 
 import jakarta.validation.constraints.*;
-import lombok.*;
+import lombok.Builder;
+import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
+
 import java.math.BigDecimal;
 import java.util.UUID;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Value
 @Builder
+@Jacksonized
 public class OrderCreateDTO {
 
     @NotNull(message = "Product ID is required")
-    private UUID productId;
+    UUID productId;
 
     @Min(value = 1, message = "Quantity must be at least 1")
-    private int quantity;
+    int quantity;
 
-    @NotNull
+    @NotNull(message = "Total price is required")
     @DecimalMin(value = "0.01", message = "Total price must be greater than 0")
-    private BigDecimal totalPrice;
+    BigDecimal totalPrice;
 
     @NotBlank(message = "Status cannot be blank")
-    private String status;
+    String status;
 }

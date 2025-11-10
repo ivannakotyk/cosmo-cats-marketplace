@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ua.kpi.ivanka.marketplace.domain.model.Category;
-import ua.kpi.ivanka.marketplace.dto.entity.CategoryDTO;
+import ua.kpi.ivanka.marketplace.dto.CategoryDTO;
 import ua.kpi.ivanka.marketplace.dto.request.CategoryCreateDTO;
 import ua.kpi.ivanka.marketplace.dto.request.CategoryUpdateDTO;
 import ua.kpi.ivanka.marketplace.service.CategoryService;
@@ -41,47 +41,48 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public CategoryDTO create(CategoryCreateDTO dto) {
-        Category category = mapper.toEntity(dto);
+    public CategoryDTO createCategory(CategoryCreateDTO dto) {
+        Category category = mapper.toCategory(dto);
         category.setId(IdGenerator.generate());
         categories.put(category.getId(), category);
         log.info("Created category {}", category.getName());
-        return mapper.toDto(category);
+        return mapper.toCategoryDTO(category);
     }
 
     @Override
-    public List<CategoryDTO> list() {
+    public List<CategoryDTO> listCategories() {
         log.debug("Listing all categories (count={})", categories.size());
         return categories.values().stream()
-                .map(mapper::toDto)
+                .map(mapper::toCategoryDTO)
                 .toList();
     }
 
     @Override
-    public CategoryDTO get(UUID id) {
+    public CategoryDTO getCategory(UUID id) {
         Category category = categories.get(id);
         if (category == null) {
             log.warn("Category with ID {} not found", id);
             throw new CategoryNotFoundException(id);
         }
         log.debug("Retrieved category {} (ID={})", category.getName(), id);
-        return mapper.toDto(category);
+        return mapper.toCategoryDTO(category);
     }
 
     @Override
-    public CategoryDTO update(UUID id, CategoryUpdateDTO dto) {
+    public CategoryDTO updateCategory(UUID id, CategoryUpdateDTO dto) {
         Category category = categories.get(id);
         if (category == null) {
             log.warn("Cannot update — category with ID {} not found", id);
             throw new CategoryNotFoundException(id);
         }
-        mapper.updateEntity(category, dto);
+
+        mapper.updateCategory(category, dto);
         log.info("Updated category {} (ID={})", category.getName(), id);
-        return mapper.toDto(category);
+        return mapper.toCategoryDTO(category);
     }
 
     @Override
-    public void delete(UUID id) {
+    public void deleteCategory(UUID id) {
         if (categories.remove(id) != null) {
             log.info("Deleted category {}", id);
         } else {

@@ -4,7 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
-import ua.kpi.ivanka.marketplace.dto.entity.OrderDTO;
+import ua.kpi.ivanka.marketplace.dto.OrderDTO;
 import ua.kpi.ivanka.marketplace.dto.request.OrderCreateDTO;
 import ua.kpi.ivanka.marketplace.dto.request.OrderUpdateDTO;
 import ua.kpi.ivanka.marketplace.service.OrderService;
@@ -17,35 +17,36 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class OrderController {
 
-    private final OrderService orderService;
+    private final OrderService service;
 
     @GetMapping
-    @ResponseStatus(HttpStatus.OK)
-    public List<OrderDTO> list() {
-        return orderService.list();
+    public ResponseEntity<List<OrderDTO>> listOrders() {
+        List<OrderDTO> orders = service.listOrders();
+        return ResponseEntity.ok(orders);
     }
 
     @GetMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
-    public OrderDTO get(@PathVariable UUID id) {
-        return orderService.get(id);
+    public ResponseEntity<OrderDTO> getOrder(@PathVariable UUID id) {
+        OrderDTO order = service.getOrder(id);
+        return ResponseEntity.ok(order);
     }
 
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public OrderDTO create(@Valid @RequestBody OrderCreateDTO dto) {
-        return orderService.create(dto);
+    public ResponseEntity<OrderDTO> createOrder(@Valid @RequestBody OrderCreateDTO dto) {
+        OrderDTO createdOrder = service.createOrder(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdOrder);
     }
 
     @PutMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
-    public OrderDTO update(@PathVariable UUID id, @Valid @RequestBody OrderUpdateDTO dto) {
-        return orderService.update(id, dto);
+    public ResponseEntity<OrderDTO> updateOrder(@PathVariable UUID id,
+                                                @Valid @RequestBody OrderUpdateDTO dto) {
+        OrderDTO updatedOrder = service.updateOrder(id, dto);
+        return ResponseEntity.ok(updatedOrder);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id) {
-        orderService.delete(id);
+    public ResponseEntity<Void> deleteOrder(@PathVariable UUID id) {
+        service.deleteOrder(id);
         return ResponseEntity.noContent().build();
     }
 }

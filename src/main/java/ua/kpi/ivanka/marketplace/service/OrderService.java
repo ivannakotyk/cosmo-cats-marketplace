@@ -1,6 +1,6 @@
 package ua.kpi.ivanka.marketplace.service;
 
-import ua.kpi.ivanka.marketplace.dto.entity.OrderDTO;
+import ua.kpi.ivanka.marketplace.dto.OrderDTO;
 import ua.kpi.ivanka.marketplace.dto.request.OrderCreateDTO;
 import ua.kpi.ivanka.marketplace.dto.request.OrderUpdateDTO;
 
@@ -9,13 +9,13 @@ import java.util.UUID;
 
 public interface OrderService {
 
-    OrderDTO create(OrderCreateDTO dto);
+    OrderDTO createOrder(OrderCreateDTO dto);
 
-    List<OrderDTO> list();
+    List<OrderDTO> listOrders();
 
-    OrderDTO get(UUID id);
+    OrderDTO getOrder(UUID id);
 
-    OrderDTO update(UUID id, OrderUpdateDTO dto);
+    OrderDTO updateOrder(UUID id, OrderUpdateDTO dto);
 
-    void delete(UUID id);
+    void deleteOrder(UUID id);
 }

@@ -2,10 +2,9 @@ package ua.kpi.ivanka.marketplace.web.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
-import ua.kpi.ivanka.marketplace.dto.entity.ProductDTO;
+import ua.kpi.ivanka.marketplace.dto.ProductDTO;
 import ua.kpi.ivanka.marketplace.dto.request.ProductCreateDTO;
 import ua.kpi.ivanka.marketplace.dto.request.ProductUpdateDTO;
 import ua.kpi.ivanka.marketplace.client.RatesClient;
@@ -24,38 +23,39 @@ public class ProductController {
     private final RatesClient ratesClient;
 
     @GetMapping
-    @ResponseStatus(HttpStatus.OK)
-    public List<ProductDTO> list() {
-        return service.list();
+    public ResponseEntity<List<ProductDTO>> listProducts() {
+        List<ProductDTO> products = service.listProducts();
+        return ResponseEntity.ok(products);
     }
 
     @GetMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
-    public ProductDTO get(@PathVariable UUID id) {
-        return service.get(id);
+    public ResponseEntity<ProductDTO> getProduct(@PathVariable UUID id) {
+        ProductDTO product = service.getProduct(id);
+        return ResponseEntity.ok(product);
     }
 
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public ProductDTO create(@Valid @RequestBody ProductCreateDTO dto) {
-        return service.create(dto);
+    public ResponseEntity<ProductDTO> createProduct(@Valid @RequestBody ProductCreateDTO dto) {
+        ProductDTO createdProduct = service.createProduct(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdProduct);
     }
 
     @PutMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
-    public ProductDTO update(@PathVariable UUID id, @Valid @RequestBody ProductUpdateDTO dto) {
-        return service.update(id, dto);
+    public ResponseEntity<ProductDTO> updateProduct(@PathVariable UUID id,
+                                                    @Valid @RequestBody ProductUpdateDTO dto) {
+        ProductDTO updatedProduct = service.updateProduct(id, dto);
+        return ResponseEntity.ok(updatedProduct);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id) {
-        service.delete(id);
+    public ResponseEntity<Void> deleteProduct(@PathVariable UUID id) {
+        service.deleteProduct(id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/rates")
-    @ResponseStatus(HttpStatus.OK)
-    public Map<String, Object> getCosmicRates() {
-        return ratesClient.getRates();
+    public ResponseEntity<Map<String, Object>> getCosmicRates() {
+        Map<String, Object> rates = ratesClient.getRates();
+        return ResponseEntity.ok(rates);
     }
 }

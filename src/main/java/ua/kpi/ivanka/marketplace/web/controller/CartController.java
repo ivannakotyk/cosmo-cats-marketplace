@@ -3,8 +3,9 @@ package ua.kpi.ivanka.marketplace.web.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ua.kpi.ivanka.marketplace.dto.entity.CartDTO;
+import ua.kpi.ivanka.marketplace.dto.CartDTO;
 import ua.kpi.ivanka.marketplace.dto.request.CartCreateDTO;
 import ua.kpi.ivanka.marketplace.dto.request.CartUpdateDTO;
 import ua.kpi.ivanka.marketplace.service.CartService;
@@ -20,32 +21,33 @@ public class CartController {
     private final CartService service;
 
     @GetMapping
-    @ResponseStatus(HttpStatus.OK)
-    public List<CartDTO> list() {
-        return service.list();
+    public ResponseEntity<List<CartDTO>> listCarts() {
+        List<CartDTO> carts = service.listCarts();
+        return ResponseEntity.ok(carts);
     }
 
     @GetMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
-    public CartDTO get(@PathVariable UUID id) {
-        return service.get(id);
+    public ResponseEntity<CartDTO> getCart(@PathVariable UUID id) {
+        CartDTO cart = service.getCart(id);
+        return ResponseEntity.ok(cart);
     }
 
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public CartDTO create(@Valid @RequestBody CartCreateDTO dto) {
-        return service.create(dto);
+    public ResponseEntity<CartDTO> createCart(@Valid @RequestBody CartCreateDTO dto) {
+        CartDTO createdCart = service.createCart(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdCart);
     }
 
     @PutMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
-    public CartDTO update(@PathVariable UUID id, @Valid @RequestBody CartUpdateDTO dto) {
-        return service.update(id, dto);
+    public ResponseEntity<CartDTO> updateCart(@PathVariable UUID id,
+                                              @Valid @RequestBody CartUpdateDTO dto) {
+        CartDTO updatedCart = service.updateCart(id, dto);
+        return ResponseEntity.ok(updatedCart);
     }
 
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable UUID id) {
-        service.delete(id);
+    public ResponseEntity<Void> deleteCart(@PathVariable UUID id) {
+        service.deleteCart(id);
+        return ResponseEntity.noContent().build();
     }
 }
