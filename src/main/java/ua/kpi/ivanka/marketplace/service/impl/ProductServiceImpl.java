@@ -3,6 +3,7 @@ package ua.kpi.ivanka.marketplace.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ua.kpi.ivanka.marketplace.client.RatesClient;
 import ua.kpi.ivanka.marketplace.domain.model.Product;
 import ua.kpi.ivanka.marketplace.dto.ProductDTO;
 import ua.kpi.ivanka.marketplace.dto.request.ProductCreateDTO;
@@ -22,7 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ProductServiceImpl implements ProductService {
 
     private final ProductMapper mapper;
-
+    private final RatesClient ratesClient;
     private final Map<UUID, Product> store = new ConcurrentHashMap<>();
 
     {
@@ -97,5 +98,11 @@ public class ProductServiceImpl implements ProductService {
         } else {
             log.debug("Product with ID {} already missing (delete is idempotent)", id);
         }
+    }
+
+    @Override
+    public Map<String, Object> getRates() {
+        log.info("Requesting cosmic exchange rates from external service...");
+        return ratesClient.getRates();
     }
 }
