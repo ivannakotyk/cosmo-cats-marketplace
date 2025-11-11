@@ -55,7 +55,7 @@ public class ProductController {
 
     @GetMapping("/rates")
     public ResponseEntity<Map<String, Object>> getCosmicRates() {
-        Map<String, Object> rates = service.getRates();
+        Map<String, Object> rates = ratesClient.getRates();
         return ResponseEntity.ok(rates);
     }
 }
