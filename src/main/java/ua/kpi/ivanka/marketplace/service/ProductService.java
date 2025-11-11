@@ -5,6 +5,7 @@ import ua.kpi.ivanka.marketplace.dto.request.ProductCreateDTO;
 import ua.kpi.ivanka.marketplace.dto.request.ProductUpdateDTO;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public interface ProductService {
@@ -18,4 +19,7 @@ public interface ProductService {
     ProductDTO updateProduct(UUID id, ProductUpdateDTO dto);
 
     void deleteProduct(UUID id);
+
+    Map<String, Object> getRates();
+
 }
