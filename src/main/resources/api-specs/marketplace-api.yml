@@ -1,0 +1,486 @@
+openapi: 3.0.3
+info:
+  title: Cosmo Cats Intergalactic Marketplace API
+  version: 1.0.0
+  description: |
+    REST API for managing intergalactic products, categories, orders, and shopping carts 
+    in the **Cosmo Cats Marketplace**.  
+    Includes CRUD operations, validation rules, idempotent DELETE behavior, and standardized error responses (RFC 9457).  
+    Integrated with a 3rd-party cosmic currency rates service (WireMock simulation).
+  license:
+    name: MIT License
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+
+tags:
+  - name: Products
+    description: Endpoints for managing intergalactic goods
+  - name: Categories
+    description: Endpoints for grouping products by category
+  - name: Orders
+    description: Endpoints for creating and tracking customer orders
+  - name: Carts
+    description: Endpoints for managing user shopping carts
+
+paths:
+  #  PRODUCTS
+  /api/v1/products:
+    get:
+      summary: Get a list of all products
+      operationId: listProducts
+      tags: [Products]
+      responses:
+        '200':
+          description: List of products
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/ProductDTO' }
+        '500':
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/ProblemDetails' }
+
+    post:
+      summary: Create a new product
+      operationId: createProduct
+      tags: [Products]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ProductCreateDTO' }
+      responses:
+        '201':
+          description: Product created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProductDTO' }
+        '400':
+          description: Validation error
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/ProblemDetails' }
+        '409':
+          description: Conflict – duplicate name
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/ProblemDetails' }
+
+  /api/v1/products/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+        description: Product unique identifier
+
+    get:
+      summary: Get a product by ID
+      operationId: getProduct
+      tags: [Products]
+      responses:
+        '200':
+          description: Product found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProductDTO' }
+        '404':
+          description: Product not found
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/ProblemDetails' }
+
+    put:
+      summary: Update a product by ID
+      operationId: updateProduct
+      tags: [Products]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ProductUpdateDTO' }
+      responses:
+        '200':
+          description: Product updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProductDTO' }
+        '400':
+          description: Validation failed
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/ProblemDetails' }
+        '404':
+          description: Product not found
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/ProblemDetails' }
+
+    delete:
+      summary: Delete a product by ID (idempotent)
+      operationId: deleteProduct
+      tags: [Products]
+      responses:
+        '204':
+          description: Product successfully deleted — idempotent operation
+            (returns 204 even if the product does not exist)
+        '500':
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/ProblemDetails' }
+
+  #  CATEGORIES
+  /api/v1/categories:
+    get:
+      summary: Get all categories
+      tags: [Categories]
+      responses:
+        '200':
+          description: List of categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/CategoryDTO' }
+    post:
+      summary: Create a new category
+      tags: [Categories]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CategoryCreateDTO' }
+      responses:
+        '201':
+          description: Category created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CategoryDTO' }
+
+  /api/v1/categories/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      summary: Get category by ID
+      tags: [Categories]
+      responses:
+        '200':
+          description: Category found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CategoryDTO' }
+        '404':
+          description: Not found
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/ProblemDetails' }
+    put:
+      summary: Update category
+      tags: [Categories]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CategoryUpdateDTO' }
+      responses:
+        '200':
+          description: Category updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CategoryDTO' }
+    delete:
+      summary: Delete category (idempotent)
+      tags: [Categories]
+      responses:
+        '204':
+          description: Category deleted — always 204 No Content
+        '500':
+          description: Internal error
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/ProblemDetails' }
+
+  #  ORDERS
+  /api/v1/orders:
+    get:
+      summary: List all orders
+      tags: [Orders]
+      responses:
+        '200':
+          description: Orders list
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/OrderDTO' }
+    post:
+      summary: Create new order
+      tags: [Orders]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/OrderCreateDTO' }
+      responses:
+        '201':
+          description: Order created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OrderDTO' }
+
+  /api/v1/orders/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      summary: Get order by ID
+      tags: [Orders]
+      responses:
+        '200':
+          description: Order found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OrderDTO' }
+        '404':
+          description: Order not found
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/ProblemDetails' }
+    put:
+      summary: Update order
+      tags: [Orders]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/OrderUpdateDTO' }
+      responses:
+        '200':
+          description: Updated order
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OrderDTO' }
+    delete:
+      summary: Delete order (idempotent)
+      tags: [Orders]
+      responses:
+        '204':
+          description: Order deleted — idempotent 204 No Content
+        '500':
+          description: Internal error
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/ProblemDetails' }
+
+  #  CARTS
+  /api/v1/carts:
+    get:
+      summary: Get all carts
+      tags: [Carts]
+      responses:
+        '200':
+          description: Carts list
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/CartDTO' }
+    post:
+      summary: Create a new cart
+      tags: [Carts]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CartCreateDTO' }
+      responses:
+        '201':
+          description: Cart created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CartDTO' }
+
+  /api/v1/carts/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      summary: Get cart by ID
+      tags: [Carts]
+      responses:
+        '200':
+          description: Cart found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CartDTO' }
+        '404':
+          description: Cart not found
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/ProblemDetails' }
+    put:
+      summary: Update cart products
+      tags: [Carts]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CartUpdateDTO' }
+      responses:
+        '200':
+          description: Cart updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CartDTO' }
+    delete:
+      summary: Delete cart (idempotent)
+      tags: [Carts]
+      responses:
+        '204':
+          description: Cart deleted — always returns 204 No Content
+
+  #  RATES
+  /api/v1/products/rates:
+    get:
+      summary: Get cosmic currency rates (via external service)
+      operationId: getRates
+      tags: [Products]
+      responses:
+        '200':
+          description: Successful response from rates service
+          content:
+            application/json:
+              schema:
+                type: object
+                example: { "USD": 42.0, "EUR": 45.5 }
+        '502':
+          description: Rates service unavailable
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/ProblemDetails' }
+
+#  COMPONENTS
+components:
+  schemas:
+    ProductDTO:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string, example: "galaxy yarn" }
+        price: { type: number, format: double, example: 12.50 }
+        description: { type: string, example: "Anti-gravity yarn" }
+        categoryId: { type: string, format: uuid, nullable: true }
+
+    ProductCreateDTO:
+      type: object
+      required: [name, price]
+      properties:
+        name: { type: string, example: "cosmo milk" }
+        price: { type: number, example: 7.99 }
+        description: { type: string }
+        categoryId: { type: string, format: uuid, nullable: true }
+
+    ProductUpdateDTO:
+      type: object
+      properties:
+        name: { type: string }
+        price: { type: number }
+        description: { type: string }
+        categoryId: { type: string, format: uuid, nullable: true }
+
+    CategoryDTO:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string, example: "Cosmic Toys" }
+
+    CategoryCreateDTO:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, example: "Galactic Snacks" }
+
+    CategoryUpdateDTO:
+      type: object
+      properties:
+        name: { type: string, example: "New Galactic Toys" }
+
+    OrderDTO:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        productId: { type: string, format: uuid }
+        quantity: { type: integer, example: 2 }
+        totalPrice: { type: number, example: 25.50 }
+        status: { type: string, example: "PROCESSING" }
+        createdAt: { type: string, format: date-time }
+
+    OrderCreateDTO:
+      type: object
+      required: [productId, quantity]
+      properties:
+        productId: { type: string, format: uuid }
+        quantity: { type: integer, example: 1 }
+
+    OrderUpdateDTO:
+      type: object
+      properties:
+        quantity: { type: integer, example: 3 }
+        totalPrice: { type: number, example: 42.00 }
+        status: { type: string, example: "SHIPPED" }
+
+    CartDTO:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        productIds:
+          type: array
+          items: { type: string, format: uuid }
+
+    CartCreateDTO:
+      type: object
+      required: [productIds]
+      properties:
+        productIds:
+          type: array
+          items: { type: string, format: uuid }
+
+    CartUpdateDTO:
+      type: object
+      properties:
+        productIds:
+          type: array
+          items: { type: string, format: uuid }
+
+    ProblemDetails:
+      type: object
+      description: Standardized error response according to RFC 9457
+      properties:
+        type: { type: string, format: uri, example: "about:blank" }
+        title: { type: string, example: "Validation failed" }
+        status: { type: integer, example: 400 }
+        detail: { type: string, example: "Field 'price' must be greater than 0" }
+        instance: { type: string, format: uri, example: "/api/v1/products" }
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - bearerAuth: []

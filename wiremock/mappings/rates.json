@@ -1,0 +1,13 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "/api/v1/rates"
+  },
+  "response": {
+    "status": 200,
+    "body": "{\"USD\":42.0,\"EUR\":45.5}",
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}
