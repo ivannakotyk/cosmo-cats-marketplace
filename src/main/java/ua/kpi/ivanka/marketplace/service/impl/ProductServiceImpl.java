@@ -8,9 +8,9 @@ import ua.kpi.ivanka.marketplace.domain.model.Product;
 import ua.kpi.ivanka.marketplace.dto.ProductDTO;
 import ua.kpi.ivanka.marketplace.dto.request.ProductCreateDTO;
 import ua.kpi.ivanka.marketplace.dto.request.ProductUpdateDTO;
+import ua.kpi.ivanka.marketplace.service.ProductService;
 import ua.kpi.ivanka.marketplace.service.exception.ProductNotFoundException;
 import ua.kpi.ivanka.marketplace.service.mapper.ProductMapper;
-import ua.kpi.ivanka.marketplace.service.ProductService;
 import ua.kpi.ivanka.marketplace.util.IdGenerator;
 
 import java.math.BigDecimal;
