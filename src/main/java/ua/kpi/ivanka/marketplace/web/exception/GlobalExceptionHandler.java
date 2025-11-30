@@ -9,8 +9,10 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ua.kpi.ivanka.marketplace.client.RatesClientException;
+import ua.kpi.ivanka.marketplace.featuretoggle.exception.FeatureNotAvailableException;
 
 import java.net.URI;
+
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -57,6 +59,24 @@ public class GlobalExceptionHandler {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(status, detail);
         problem.setTitle(title);
         problem.setInstance(URI.create(path));
+        return problem;
+    }
+
+    @ExceptionHandler(FeatureNotAvailableException.class)
+    public ProblemDetail handleFeatureNotAvailable(
+            FeatureNotAvailableException ex,
+            HttpServletRequest request
+    ) {
+        log.warn("Feature not available at path {}: {}", request.getRequestURI(), ex.getMessage());
+
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.NOT_FOUND,
+                ex.getMessage()
+        );
+        problem.setTitle("Feature not available");
+        problem.setInstance(URI.create(request.getRequestURI()));
+        problem.setType(URI.create("/problems/feature-not-available"));
+
         return problem;
     }
 }
