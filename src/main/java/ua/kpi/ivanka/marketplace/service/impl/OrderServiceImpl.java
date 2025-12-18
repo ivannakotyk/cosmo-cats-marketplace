@@ -2,6 +2,7 @@ package ua.kpi.ivanka.marketplace.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ua.kpi.ivanka.marketplace.dto.OrderDTO;
@@ -34,6 +35,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER', 'API')")
     public OrderDTO createOrder(OrderCreateDTO dto) {
         log.info("Processing new order with {} items", dto.getItems().size());
         try {
@@ -74,12 +76,14 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional(readOnly = true)
+    @PreAuthorize("hasAnyRole('ADMIN', 'API')")
     public List<OrderDTO> getAllOrders() {
         return mapper.toDTOs(orderRepository.findAll());
     }
 
     @Override
     @Transactional(readOnly = true)
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER', 'API')")
     public OrderDTO getOrder(UUID id) {
         return orderRepository.findByNaturalId(id)
                 .map(mapper::toDTO)
@@ -88,6 +92,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional(readOnly = true)
+    @PreAuthorize("hasAnyRole('ADMIN', 'API')")
     public List<OrderDTO> getOrdersByStatus(String status) {
         log.info("Fetching orders status: {}", status);
         return mapper.toDTOs(orderRepository.findByStatus(status));
@@ -95,6 +100,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional(readOnly = true)
+    @PreAuthorize("hasAnyRole('ADMIN', 'API')")
     public List<OrderDTO> getHighValueOrders(BigDecimal minAmount) {
         log.info("Fetching orders with total price > {}", minAmount);
         return mapper.toDTOs(orderRepository.findHighValueOrders(minAmount));
@@ -102,6 +108,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional(readOnly = true)
+    @PreAuthorize("hasAnyRole('ADMIN', 'API')")
     public List<OrderDTO> getOrdersCreatedAfter(LocalDateTime date) {
         log.info("Fetching orders created after: {}", date);
         return mapper.toDTOs(orderRepository.findByCreatedAtAfter(date));

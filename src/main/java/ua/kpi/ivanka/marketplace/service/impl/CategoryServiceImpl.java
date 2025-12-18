@@ -2,6 +2,7 @@ package ua.kpi.ivanka.marketplace.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ua.kpi.ivanka.marketplace.dto.CategoryDTO;
@@ -26,6 +27,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional(readOnly = true)
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER', 'API')")
     public List<CategoryDTO> getAllCategories() {
         return categoryRepository.findAll().stream()
                 .map(mapper::toDTO)
@@ -34,6 +36,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional(readOnly = true)
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER', 'API')")
     public CategoryDTO getCategory(UUID id) {
         return categoryRepository.findByNaturalId(id)
                 .map(mapper::toDTO)
@@ -42,6 +45,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional(readOnly = true)
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER', 'API')")
     public List<CategoryDTO> searchCategories(String keyword) {
         log.info("Searching categories by description: {}", keyword);
         if (keyword == null || keyword.isBlank()) {
@@ -54,6 +58,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional
+    @PreAuthorize("hasAnyRole('ADMIN', 'API')")
     public CategoryDTO createCategory(CategoryDTO dto) {
         log.info("Creating category: {}", dto.getName());
         if (categoryRepository.findByName(dto.getName()).isPresent()) {
@@ -72,6 +77,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional(readOnly = true)
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER', 'API')")
     public CategoryDTO getCategoryByName(String name) {
         log.info("Fetching category by name: {}", name);
         return categoryRepository.findByName(name)

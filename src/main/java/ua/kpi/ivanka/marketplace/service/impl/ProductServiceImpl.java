@@ -2,6 +2,7 @@ package ua.kpi.ivanka.marketplace.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ua.kpi.ivanka.marketplace.client.RatesClient;
@@ -37,6 +38,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
+    @PreAuthorize("hasAnyRole('ADMIN', 'API')")
     public ProductDTO createProduct(ProductCreateDTO dto) {
         log.info("Attempting to create product with name: {}", dto.getName());
         try {
@@ -67,6 +69,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER', 'API')")
     public List<ProductDTO> listProducts() {
         log.debug("Fetching all products");
         return productRepository.findAll().stream()
@@ -76,6 +79,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER', 'API')")
     public ProductDTO getProduct(UUID id) {
         log.debug("Fetching product by ID: {}", id);
         return productRepository.findByNaturalId(id)
@@ -88,6 +92,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
+    @PreAuthorize("hasAnyRole('ADMIN', 'API')")
     public ProductDTO updateProduct(UUID id, ProductUpdateDTO dto) {
         log.info("Attempting to update product with ID: {}", id);
         try {
@@ -117,6 +122,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
     public void deleteProduct(UUID id) {
         log.info("Attempting to delete product with ID: {}", id);
         try {
@@ -135,12 +141,14 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER', 'API')")
     public Map<String, Object> getRates() {
         return ratesClient.getRates();
     }
 
     @Override
     @Transactional(readOnly = true)
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER', 'API')")
     public List<ProductDTO> listProductsByCategory(UUID categoryId) {
         log.info("Fetching products for category: {}", categoryId);
         return mapper.toProductDTOs(productRepository.findByCategory_PublicId(categoryId));
@@ -148,6 +156,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER', 'API')")
     public List<ProductDTO> searchProducts(String query) {
         log.info("Searching products by query: {}", query);
         if (query == null || query.isBlank()) {
@@ -158,6 +167,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
+    @PreAuthorize("hasAnyRole('ADMIN', 'API')")
     public List<ProductSalesReport> getSalesReport() {
         log.info("Generating sales report");
         List<ProductSalesReport> reports = productRepository.getProductSalesReport();
@@ -168,6 +178,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
+    @PreAuthorize("hasAnyRole('ADMIN', 'API')")
     public List<PopularProductReport> getPopularProducts() {
         log.info("Generating popular products report");
         return productRepository.getPopularProducts();
@@ -175,6 +186,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER', 'API')")
     public List<ProductDTO> listProductsByPriceLessThan(BigDecimal maxPrice) {
         log.info("Fetching products cheaper than: {}", maxPrice);
         return productRepository.findByPriceLessThan(maxPrice).stream()

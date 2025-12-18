@@ -67,3 +67,11 @@ application:
 tests:
   unit-tests:
     enabled: true
+
+security:
+  api-key-header: X-API-KEY
+  api-key: ${SECURITY_API_KEY:cosmo-cats-api-key}
+  jwt:
+    secret: ${SECURITY_JWT_SECRET:v3ry-l0ng-s3cr3t-k3y-f0r-hmac-sha256-algorithm-test-key}
+    jws-algorithm: HS256
+    roles-claim: roles
