@@ -11,10 +11,9 @@ spring:
 
   jpa:
     show-sql: true
-    properties:
-      hibernate:
-        ddl-auto: validate
     open-in-view: false
+    hibernate:
+      ddl-auto: validate
 
   docker:
     compose:
@@ -29,3 +28,11 @@ application:
     toggles:
       cosmo-cats: true
       kitty-products: true
+
+security:
+  api-key-header: X-API-KEY
+  api-key: cosmo-cats-api-key
+  jwt:
+    secret: v3ry-l0ng-s3cr3t-k3y-f0r-hmac-sha256-algorithm-test-key
+    jws-algorithm: HS256
+    roles-claim: roles
