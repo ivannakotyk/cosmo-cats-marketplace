@@ -5,22 +5,20 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
+import ua.kpi.ivanka.marketplace.AbstractIT;
 import ua.kpi.ivanka.marketplace.featuretoggle.FeatureToggleExtension;
 import ua.kpi.ivanka.marketplace.featuretoggle.FeatureToggles;
 import ua.kpi.ivanka.marketplace.featuretoggle.annotation.DisabledFeatureToggle;
 import ua.kpi.ivanka.marketplace.featuretoggle.annotation.EnabledFeatureToggle;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
-@AutoConfigureMockMvc
 @ExtendWith(FeatureToggleExtension.class)
 @DisplayName("Cosmo Controller Integration Tests")
-class CosmoControllerIT {
+class CosmoControllerIT extends AbstractIT {
 
     @Autowired
     private MockMvc mockMvc;
@@ -34,7 +32,10 @@ class CosmoControllerIT {
     @DisabledFeatureToggle(FeatureToggles.COSMO_CATS)
     void shouldReturn404WhenCatsDisabled() {
         mockMvc.perform(get(CATS_URL))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.type").value("/problems/feature-not-available"))
+                .andExpect(jsonPath("$.title").value("Feature not available"))
+                .andExpect(jsonPath("$.detail").value("Feature 'cosmo-cats' is disabled"));
     }
 
     @Test
@@ -52,7 +53,10 @@ class CosmoControllerIT {
     @DisabledFeatureToggle(FeatureToggles.KITTY_PRODUCTS)
     void shouldReturn404WhenProductsDisabled() {
         mockMvc.perform(get(PRODUCTS_URL))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.type").value("/problems/feature-not-available"))
+                .andExpect(jsonPath("$.title").value("Feature not available"))
+                .andExpect(jsonPath("$.detail").value("Feature 'kitty-products' is disabled"));
     }
 
     @Test

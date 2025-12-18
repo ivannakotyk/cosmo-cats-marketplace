@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ua.kpi.ivanka.marketplace.client.RatesClientException;
 import ua.kpi.ivanka.marketplace.featuretoggle.exception.FeatureNotAvailableException;
+import ua.kpi.ivanka.marketplace.repository.exception.CosmicPersistenceException;
 
 import java.net.URI;
 
@@ -78,5 +79,10 @@ public class GlobalExceptionHandler {
         problem.setType(URI.create("/problems/feature-not-available"));
 
         return problem;
+    }
+
+    @ExceptionHandler(CosmicPersistenceException.class)
+    public ProblemDetail handleCosmicException(CosmicPersistenceException ex, HttpServletRequest request) {
+        return buildProblem(HttpStatus.BAD_REQUEST, "Business Rule Violation", ex.getMessage(), request.getRequestURI());
     }
 }

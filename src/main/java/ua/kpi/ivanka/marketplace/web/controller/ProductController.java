@@ -58,4 +58,29 @@ public class ProductController {
         Map<String, Object> rates = service.getRates();
         return ResponseEntity.ok(rates);
     }
+
+    @GetMapping("/category/{categoryId}")
+    public ResponseEntity<List<ProductDTO>> getByCategory(@PathVariable UUID categoryId) {
+        return ResponseEntity.ok(service.listProductsByCategory(categoryId));
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<ProductDTO>> search(@RequestParam("query") String query) {
+        return ResponseEntity.ok(service.searchProducts(query));
+    }
+
+    @GetMapping("/reports/sales")
+    public ResponseEntity<List<ua.kpi.ivanka.marketplace.repository.projection.ProductSalesReport>> getSalesReport() {
+        return ResponseEntity.ok(service.getSalesReport());
+    }
+
+    @GetMapping("/reports/popular")
+    public ResponseEntity<List<ua.kpi.ivanka.marketplace.repository.projection.PopularProductReport>> getPopularReport() {
+        return ResponseEntity.ok(service.getPopularProducts());
+    }
+
+    @GetMapping("/search/price")
+    public ResponseEntity<List<ProductDTO>> searchByMaxPrice(@RequestParam("max") java.math.BigDecimal maxPrice) {
+        return ResponseEntity.ok(service.listProductsByPriceLessThan(maxPrice));
+    }
 }
