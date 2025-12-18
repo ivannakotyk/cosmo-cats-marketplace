@@ -1,6 +1,7 @@
 package ua.kpi.ivanka.marketplace.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import ua.kpi.ivanka.marketplace.featuretoggle.FeatureToggles;
 import ua.kpi.ivanka.marketplace.featuretoggle.annotation.FeatureToggle;
@@ -12,6 +13,7 @@ import java.util.List;
 public class CosmoCatService {
 
     @FeatureToggle(FeatureToggles.COSMO_CATS)
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER', 'API')")
     public List<String> getCosmoCats() {
         log.info("Feature '{}' enabled → Fetching Cosmo Cats",
                 FeatureToggles.COSMO_CATS.getPropertyKey());
@@ -24,6 +26,7 @@ public class CosmoCatService {
     }
 
     @FeatureToggle(FeatureToggles.KITTY_PRODUCTS)
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER', 'API')")
     public List<String> getKittyProducts() {
         log.info("Feature '{}' enabled → Fetching Kitty Products",
                 FeatureToggles.KITTY_PRODUCTS.getPropertyKey());
