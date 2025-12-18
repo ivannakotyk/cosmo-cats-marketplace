@@ -1,161 +1,201 @@
 package ua.kpi.ivanka.marketplace.web;
 
-import com.github.tomakehurst.wiremock.client.WireMock;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ua.kpi.ivanka.marketplace.AbstractIT;
+import ua.kpi.ivanka.marketplace.dto.request.ProductCreateDTO;
+import ua.kpi.ivanka.marketplace.dto.request.ProductUpdateDTO;
+import ua.kpi.ivanka.marketplace.repository.CategoryRepository;
+import ua.kpi.ivanka.marketplace.repository.ProductRepository;
+import ua.kpi.ivanka.marketplace.repository.entity.CategoryEntity;
+import ua.kpi.ivanka.marketplace.repository.entity.ProductEntity;
 
 import java.math.BigDecimal;
-import java.util.Map;
 import java.util.UUID;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.reset;
-import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@AutoConfigureMockMvc
 @DisplayName("Product Controller Integration Tests")
-@Tag("product-service")
-public class ProductControllerIT extends AbstractIT {
+class ProductControllerIT extends AbstractIT {
 
     @Autowired
     private MockMvc mockMvc;
-
     @Autowired
     private ObjectMapper objectMapper;
+    @Autowired
+    private ProductRepository productRepository;
+    @Autowired
+    private CategoryRepository categoryRepository;
+
+    private CategoryEntity testCategory;
 
     @BeforeEach
-    void clearWiremock() {
-        reset();
-    }
+    void setUp() {
+        productRepository.deleteAll();
+        categoryRepository.deleteAll();
 
-    private String jsonCreate(String name, String price) throws Exception {
-        Map<String, Object> body = Map.of(
-                "name", name,
-                "price", new BigDecimal(price),
-                "description", "desc"
-        );
-        return objectMapper.writeValueAsString(body);
+        testCategory = categoryRepository.save(CategoryEntity.builder()
+                .name("Space Toys")
+                .description("Toys for space cats")
+                .build());
     }
 
     @Test
     @SneakyThrows
-    @DisplayName("POST /products -> should create product with ID and return 201")
-    void createProduct() {
+    @DisplayName("Should create product and persist in DB")
+    void shouldCreateProduct() {
+        ProductCreateDTO dto = ProductCreateDTO.builder()
+                .name("Galaxy Laser Pointer")
+                .price(new BigDecimal("50.00"))
+                .description("Red dot")
+                .categoryId(testCategory.getPublicId())
+                .build();
+
         mockMvc.perform(post("/api/v1/products")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(jsonCreate("Galaxy Salmon", "12.34")))
+                        .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").exists())
-                .andExpect(jsonPath("$.name").value("Galaxy Salmon"))
-                .andExpect(jsonPath("$.price").value(12.34));
+                .andExpect(jsonPath("$.name").value("Galaxy Laser Pointer"));
     }
 
     @Test
     @SneakyThrows
-    @DisplayName("POST /products -> should return 400 with ProblemDetail when validation fails")
-    void validationError() {
-        Map<String, Object> invalid = Map.of("name", "ab", "price", new BigDecimal("0.00"));
+    @DisplayName("Should get all products")
+    void shouldGetAllProducts() {
+        createProductEntity("Star Ball", 10.0);
+        createProductEntity("Galaxy Mouse", 20.0);
 
-        mockMvc.perform(post("/api/v1/products")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(invalid)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.title").exists())
-                .andExpect(jsonPath("$.detail").exists())
-                .andExpect(jsonPath("$.instance").value("/api/v1/products"));
-    }
-
-    @Test
-    @SneakyThrows
-    @DisplayName("GET /products -> should return 200 with product list")
-    void listProducts() {
         mockMvc.perform(get("/api/v1/products"))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    @SneakyThrows
-    @DisplayName("GET /products/{id} -> should return 404 ProblemDetail when product not found")
-    void getNotFound() {
-        UUID id = UUID.randomUUID();
-
-        mockMvc.perform(get("/api/v1/products/{id}", id))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.status").value(404))
-                .andExpect(jsonPath("$.instance").value(String.format("/api/v1/products/%s", id)));
-    }
-
-    @Test
-    @SneakyThrows
-    @DisplayName("PUT /products/{id} -> should update product and return 200 OK")
-    void updateProduct() {
-        String createBody = jsonCreate("Galaxy Quasar Roll", "8.90");
-        String response = mockMvc.perform(post("/api/v1/products")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(createBody))
-                .andExpect(status().isCreated())
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
-
-        String productId = objectMapper.readTree(response).get("id").asText();
-
-        Map<String, Object> update = Map.of(
-                "name", "Galaxy Quasar Roll XL",
-                "price", new BigDecimal("9.90")
-        );
-
-        mockMvc.perform(put("/api/v1/products/{id}", productId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(update)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(productId))
-                .andExpect(jsonPath("$.name").value("Galaxy Quasar Roll XL"))
-                .andExpect(jsonPath("$.price").value(9.90));
+                .andExpect(jsonPath("$", hasSize(2)));
     }
 
     @Test
     @SneakyThrows
-    @DisplayName("DELETE /products/{id} -> should return 204 and be idempotent")
-    void deleteProduct() {
-        UUID id = UUID.randomUUID();
+    @DisplayName("Should update product")
+    void shouldUpdateProduct() {
+        ProductEntity saved = createProductEntity("Old Galaxy Name", 100.0);
 
-        mockMvc.perform(delete("/api/v1/products/{id}", id))
-                .andExpect(status().isNoContent())
-                .andExpect(result ->
-                        System.out.printf("Product with ID %s successfully deleted (idempotent)%n", id));
+        ProductUpdateDTO updateDto = ProductUpdateDTO.builder()
+                .name("New Galaxy Name")
+                .price(new BigDecimal("200.00"))
+                .description("Updated desc")
+                .categoryId(testCategory.getPublicId())
+                .build();
 
-        mockMvc.perform(delete("/api/v1/products/{id}", id))
+        mockMvc.perform(put("/api/v1/products/{id}", saved.getPublicId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("New Galaxy Name"))
+                .andExpect(jsonPath("$.price").value(200.0));
+    }
+
+    @Test
+    @SneakyThrows
+    @DisplayName("Should delete product")
+    void shouldDeleteProduct() {
+        ProductEntity saved = createProductEntity("Comet To Delete", 5.0);
+
+        mockMvc.perform(delete("/api/v1/products/{id}", saved.getPublicId()))
                 .andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/api/v1/products/{id}", saved.getPublicId()))
+                .andExpect(status().isNotFound());
     }
 
     @Test
     @SneakyThrows
-    @DisplayName("GET /products/rates -> should return 200 with stubbed WireMock response")
-    void ratesEndpoint() {
-        WireMock.stubFor(WireMock.get("/api/v1/rates")
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-                        .withBody("{\"usd\":40.1,\"eur\":42.0}")));
+    @DisplayName("Should return 400 Bad Request when product name is invalid")
+    void shouldReturn400OnInvalidName() {
+        ProductCreateDTO invalidDto = ProductCreateDTO.builder()
+                .name("No")
+                .price(new BigDecimal("10.00"))
+                .categoryId(UUID.randomUUID())
+                .build();
 
-        mockMvc.perform(get("/api/v1/products/rates"))
+        mockMvc.perform(post("/api/v1/products")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidDto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.detail").exists());
+    }
+
+    @Test
+    @SneakyThrows
+    @DisplayName("Should search products by query")
+    void shouldSearchProducts() {
+        createProductEntity("Galaxy Phone", 500.0);
+        createProductEntity("Star Wars Lego", 100.0);
+        createProductEntity("Ordinary Spoon", 5.0);
+
+        mockMvc.perform(get("/api/v1/products/search")
+                        .param("query", "Star"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.usd").value(40.1))
-                .andExpect(jsonPath("$.eur").value(42.0))
-                .andExpect(result ->
-                        System.out.printf("Cosmic rates retrieved: USD=%.1f, EUR=%.1f%n", 40.1, 42.0));
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].name").value("Star Wars Lego"));
+    }
+
+    @Test
+    @SneakyThrows
+    @DisplayName("Should filter products by max price")
+    void shouldFilterByMaxPrice() {
+        createProductEntity("Cheap Star", 10.0);
+        createProductEntity("Expensive Star", 1000.0);
+
+        mockMvc.perform(get("/api/v1/products/search/price")
+                        .param("max", "50.00"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].name").value("Cheap Star"));
+    }
+
+    @Test
+    @SneakyThrows
+    @DisplayName("Should get products by category")
+    void shouldGetByCategory() {
+        createProductEntity("Space Food", 10.0);
+
+        CategoryEntity otherCat = categoryRepository.save(CategoryEntity.builder().name("Earth").build());
+        productRepository.save(ProductEntity.builder().name("Earth Food").price(BigDecimal.TEN).category(otherCat).build());
+
+        mockMvc.perform(get("/api/v1/products/category/{id}", testCategory.getPublicId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].name").value("Space Food"));
+    }
+
+    @Test
+    @SneakyThrows
+    @DisplayName("Should call report endpoints")
+    void shouldGetReports() {
+        mockMvc.perform(get("/api/v1/products/reports/sales")).andExpect(status().isOk());
+        mockMvc.perform(get("/api/v1/products/reports/popular")).andExpect(status().isOk());
+    }
+
+    @Test
+    @SneakyThrows
+    @DisplayName("Should return 404 when getting non-existent product")
+    void shouldReturn404ForMissingProduct() {
+        mockMvc.perform(get("/api/v1/products/{id}", UUID.randomUUID()))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.detail").exists());
+    }
+
+    private ProductEntity createProductEntity(String name, double price) {
+        return productRepository.save(ProductEntity.builder()
+                .name(name)
+                .price(BigDecimal.valueOf(price))
+                .category(testCategory)
+                .build());
     }
 }
