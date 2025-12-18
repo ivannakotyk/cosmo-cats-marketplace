@@ -39,6 +39,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-aop'
     implementation 'org.springframework.boot:spring-boot-starter-data-rest'
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.liquibase:liquibase-core'
+    runtimeOnly 'org.postgresql:postgresql'
     implementation 'jakarta.validation:jakarta.validation-api:3.1.0'
     implementation 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
     implementation 'org.mapstruct:mapstruct:1.6.2'
@@ -51,6 +54,7 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-testcontainers'
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.testcontainers:junit-jupiter'
+    testImplementation 'org.testcontainers:postgresql'
     testImplementation 'org.assertj:assertj-core:3.24.2'
     testImplementation "org.wiremock:wiremock-jetty12:3.9.2"
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
@@ -58,4 +62,3 @@ dependencies {
     testAnnotationProcessor 'org.mapstruct:mapstruct-processor:1.6.2'
     testImplementation 'org.projectlombok:lombok:1.18.34'
 }
-
